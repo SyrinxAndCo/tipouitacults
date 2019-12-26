@@ -1,4 +1,6 @@
-import {Channel, GuildMember, Message, MessageReaction, Role} from "discord.js"
+import {Channel, GuildMember, Message, MessageReaction, ReactionCollector, RichEmbed, Role, User} from "discord.js"
+import { Model } from "sequelize/types"
+import {BuildOptions} from "sequelize"
 
 export type Authorization = {
     type: string
@@ -35,6 +37,10 @@ export type Command = {
     run : (params: string[], msg: Message) => void
 }
 
+export type VoteCommand = Command & {
+    autoTurquoise: (targetId: string, voteNumber: number) => void//so fucking ugly
+}
+
 export type AutoCommand = {
     name : string
     desc : string
@@ -58,18 +64,59 @@ export type TicuAuthorization = {
     Auto : (autoCommand: AutoCommand, msg: Message) => boolean
 }
 
+export type JsonVote = {
+    threshold: number
+    type: string
+    chan: string
+    votes: {
+        oui: string[]
+        non: string[]
+        delai: string[]
+        blanc: string[]
+    }
+}
+
+export type TicuVoteCollection = {
+    Init : (type: string, msg: Message) => void
+    Startup : () => void
+    Collectors : {
+        [prop: string]: any
+    },
+    Collected : (type: string, reaction: MessageReaction, collector: ReactionCollector) => void
+    Done : (type: string, reactions: MessageReaction[], reason: string, msg: Message) => void
+    CreateEmbedAnon: (target: GuildMember, type: string, threshold: number, voteJson?: JsonVote, result?: string) => RichEmbed
+}
+
+export type TicuXp = {
+    updateXp: (type: string, value: number, target: string) => void
+    updateAllXp: (type: string, value: number) => void
+    processXpFromMessage: (type: string, msg: Message) => void
+    processXpMessageUpdate: (oldMsg: Message, newMsg: Message) => void
+    reactionXp: (type: string, reaction: MessageReaction, usr: User) => void
+    getMember: (id: string) => Promise<MemberXPModel>
+    getXpByLevel: (level: number) => number
+    changeMemberStatus: (target: string, activated: boolean, msg: Message) => void
+    resetEveryOneXp: () => void
+    errorTypes: {
+        AUTOVOTE: string
+        MULTIPLEUPDATE: string
+        NOUPDATE: string
+    }
+}
+
 export type Ticu = {
     Date : (type: string) => string
     Log : any
     json : (data: JsonTicu) => any
-    Xp : any
+    Xp : TicuXp
     Mention : (param: string) => Role|Channel|GuildMember|boolean|undefined
     Authorizations : TicuAuthorization
-    VotesCollections : any
+    VotesCollections : TicuVoteCollection
     Categories : any
     Channels : any
     Commands : {
         [prop: string]: Command
+        vote: VoteCommand
     }
     Reactions : {
         [prop: string]: ReactionsCommand
@@ -128,11 +175,15 @@ export type Pub = {
     }
 }
 
-export type MemberXPType = {
+export interface MemberXPModel extends Model {
     id: string
     xp: number
     level: number
     activated: boolean
+}
+
+export type MemberXPModelStatic = typeof Model & {
+    new (values?: object, options?: BuildOptions): MemberXPModel;
 }
 
 export type JsonTicu = {

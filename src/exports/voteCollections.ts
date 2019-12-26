@@ -1,5 +1,14 @@
+import {JsonVote, Pub, Ticu, TicuVoteCollection} from "../types"
+import {Guild, GuildMember, Message, MessageReaction, ReactionCollector, RichEmbed, TextChannel, User} from "discord.js"
+
+declare const VotesFile: string
+declare const VotesEmojis: string[]
+declare const PUB: Pub
+declare const TiCu: Ticu
+declare const tipoui: Guild
+
 const fs = require("fs")
-const emojiTable = {};
+const emojiTable: any = {};
 emojiTable[VotesEmojis[0]] = "oui";
 emojiTable[VotesEmojis[1]] = "non";
 emojiTable[VotesEmojis[2]] = "blanc";
@@ -11,11 +20,11 @@ const results = {
   delai: "Proposition ajournée"
 }
 
-function filterReactions(expectedEmojis) {
-  return (reaction, user) => {return (!user.bot) && (expectedEmojis.includes(reaction.emoji.name))}
+function filterReactions(expectedEmojis: string[]) {
+  return (reaction: MessageReaction, user: User) => {return (!user.bot) && (expectedEmojis.includes(reaction.emoji.name))}
 }
 
-function checkThreshold(vote, collector) {
+function checkThreshold(vote: JsonVote, collector: ReactionCollector) {
   if (vote.threshold === -1) {
     return false
   }
@@ -54,7 +63,7 @@ function checkThreshold(vote, collector) {
   }
 }
 
-function updateVotes(reaction, collector) {
+function updateVotes(reaction: MessageReaction, collector: ReactionCollector) {
   let votesJSON = JSON.parse(fs.readFileSync(VotesFile))
   let msg = reaction.message
   let user
@@ -65,10 +74,10 @@ function updateVotes(reaction, collector) {
       break
     }
   }
-  let alreadyVoted
+  let alreadyVoted = ''
   for (const emojiType of Object.values(emojiTable)) {
-    if (votesJSON[msg.id].votes[emojiType].includes(user)) {
-      alreadyVoted = emojiType
+    if (votesJSON[msg.id].votes[emojiType as string].includes(user)) {
+      alreadyVoted = emojiType as string
     }
   }
   if (alreadyVoted) {
@@ -88,7 +97,7 @@ function updateVotes(reaction, collector) {
   fs.writeFileSync(VotesFile, JSON.stringify(votesJSON, null, 2))
   reaction.message.edit(
     TiCu.VotesCollections.CreateEmbedAnon(
-      tipoui.members.get(votesJSON[msg.id].target),
+      tipoui.members.get(votesJSON[msg.id].target)!!,
       votesJSON[msg.id].type,
       votesJSON[msg.id].threshold,
       votesJSON[msg.id]
@@ -98,48 +107,48 @@ function updateVotes(reaction, collector) {
   TiCu.Log.VoteUpdate(user, emojiTable[reaction.emoji.name], msg)
 }
 
-function createCollector(type, msg) {
+function createCollector(type: string, msg: Message) {
   TiCu.VotesCollections.Collectors[msg.id] = msg.createReactionCollector(filterReactions(VotesEmojis));
-  TiCu.VotesCollections.Collectors[msg.id].on("collect", (reaction, collector) =>
+  TiCu.VotesCollections.Collectors[msg.id].on("collect", (reaction: MessageReaction, collector: ReactionCollector) =>
     TiCu.VotesCollections.Collected(type, reaction, collector))
-  TiCu.VotesCollections.Collectors[msg.id].on("end", (reactions, reason)  =>
+  TiCu.VotesCollections.Collectors[msg.id].on("end", (reactions: MessageReaction[], reason: string)  =>
     TiCu.VotesCollections.Done(type, reactions, reason, msg))
   TiCu.Log.VoteCollector(msg)
 }
 
-module.exports = {
-  Init : (type, msg) => {
+export = new class implements TicuVoteCollection {
+  Init = (type: string, msg: Message) => {
     createCollector(type, msg)
-  },
-  Startup : () => {
+  }
+  Startup = () => {
     let votesJSON = JSON.parse(fs.readFileSync(VotesFile).toString());
     for (const [id, entry] of Object.entries(votesJSON)) {
       if (typeof entry === "object") {
-        tipoui.channels.get(entry.chan).fetchMessage(id).then(msg => {
-          createCollector(entry.type, msg);
+        (tipoui.channels.get((entry as JsonVote).chan) as TextChannel).fetchMessage(id).then(msg => {
+          createCollector((entry as JsonVote).type, msg);
         })
       }
     }
-  },
-  Collectors : {},
-  Collected : (type, reaction, collector) => {
+  }
+  Collectors = {}
+  Collected = (type: string, reaction: MessageReaction, collector: ReactionCollector) => {
       updateVotes(reaction, collector)
-  },
-  Done : (type, reactions, reason, msg) => {
+  }
+  Done = (type: string, reactions: MessageReaction[], reason: string, msg: Message) => {
     let votesJSON = JSON.parse(fs.readFileSync(VotesFile))
     let target = votesJSON[msg.id].target
     if (reason === "oui") {
       switch (type) {
         case "ban":
-          tipoui.members.get(target).ban()
+          tipoui.members.get(target)!.ban()
             .then(() => TiCu.Log.VoteDone(reason, type, msg, target))
           break
         case "kick":
-          tipoui.members.get(target).kick()
+          tipoui.members.get(target)!.kick()
             .then(() => TiCu.Log.VoteDone(reason, type, msg, target))
           break
         case "turquoise":
-          tipoui.members.get(target).addRoles([PUB.roles.turquoise.id, PUB.roles.turquoiseColor.id])
+          tipoui.members.get(target)!.addRoles([PUB.roles.turquoise.id, PUB.roles.turquoiseColor.id])
             .then(() => TiCu.Log.VoteDone(reason, type, msg, target))
           break
         case "text":
@@ -152,28 +161,28 @@ module.exports = {
     }
     msg.edit(
       TiCu.VotesCollections.CreateEmbedAnon(
-        tipoui.members.get(votesJSON[msg.id].target),
+        tipoui.members.get(votesJSON[msg.id].target)!!,
         votesJSON[msg.id].type,
         votesJSON[msg.id].threshold,
         votesJSON[msg.id],
-        results[reason]
+        (results as any)[reason]
       )
     )
     delete votesJSON[msg.id]
     fs.writeFileSync(VotesFile, JSON.stringify(votesJSON, null, 2))
-  },
-  CreateEmbedAnon: (target, type, threshold, voteJson = undefined, result = undefined) => {
+  }
+  CreateEmbedAnon = (target: GuildMember, type: string, threshold: number, voteJson?: JsonVote|undefined, result?: string|undefined) => {
     let nbVotes = 0
     if (voteJson !== undefined) {
       for (const votes of Object.values(voteJson.votes)) {
         nbVotes += votes.length
       }
     }
-    const embed = new DiscordNPM.RichEmbed()
+    const embed = new RichEmbed()
       .setColor(target.displayColor)
       .setAuthor(`Vote de ${type === "turquoise" ? "passage" : ""} ${type.toUpperCase()} pour ${target.displayName}`, target.user.avatarURL)
     for (const emoji of VotesEmojis) {
-      embed.addField(emoji, voteJson !== undefined ? voteJson.votes[emojiTable[emoji]].length : 0, emoji !== VotesEmojis[3])
+      embed.addField(emoji, voteJson !== undefined ? (voteJson.votes as any)[emojiTable[emoji]].length : 0, emoji !== VotesEmojis[3])
     }
     embed.addField("Votes nécessaires", threshold, true)
     embed.addField("Votes actuels", nbVotes, true)

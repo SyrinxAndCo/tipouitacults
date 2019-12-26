@@ -1,4 +1,4 @@
-import {Command, MemberXPType, Pub, Ticu} from "../../types"
+import {Command, MemberXPModel, Pub, Ticu} from "../../types"
 import {Guild, GuildMember, Message, RichEmbed} from "discord.js"
 
 declare const TiCu: Ticu
@@ -19,7 +19,7 @@ function generateProgressionBar(percentage: number) {
   return bar
 }
 
-function makeEmbed(user: GuildMember, msg: Message, entry: MemberXPType) {
+function makeEmbed(user: GuildMember, msg: Message, entry: MemberXPModel) {
   const totalXpForNextLevel = TiCu.Xp.getXpByLevel(entry.level + 1)
   const totalXpForCurrentLevel = TiCu.Xp.getXpByLevel(entry.level)
   const xpInLevelForMember = entry.xp - totalXpForCurrentLevel
@@ -65,7 +65,7 @@ export = new class implements Command {
     const memberParam = params[0] ? TiCu.Mention(params[0]) : null
     const target = memberParam instanceof GuildMember ? memberParam.id : msg.author.id
      TiCu.Xp.getMember(target).then(
-       (entry: MemberXPType) => {
+       (entry: MemberXPModel) => {
          if (entry) {
            if (entry.activated) {
              msg.channel.send(makeEmbed(tipoui.members.get(target)!!, msg, entry))

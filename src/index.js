@@ -38,7 +38,6 @@ for (const command of commandFiles) {
   const aux = require('./exports/commands/' + command)
   if (aux.alias && aux.activated) {
     for (const aliasCmd of aux.alias) {
-      console.log(aliasCmd)
       TiCu.Commands[aliasCmd] = aux
     }
   }

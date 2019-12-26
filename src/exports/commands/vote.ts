@@ -1,4 +1,4 @@
-import {Command, JsonTicu, Pub, Ticu} from "../../types"
+import {JsonTicu, Pub, Ticu, VoteCommand} from "../../types"
 import {Guild, GuildMember, Message, TextChannel} from "discord.js"
 
 declare const PUB: Pub
@@ -16,6 +16,7 @@ function voteThreshold(type: string) {
     case "turquoise":
       return Math.floor(tipoui.roles.get(PUB.roles.turquoise.id)!!.members.size*42/100)
     case "text":
+    default:
       return -1
   }
 }
@@ -42,7 +43,7 @@ function createJsonForAnonVote(msg: Message, target: GuildMember, type: string) 
   return json
 }
 
-export = new class implements Command{
+export = new class implements VoteCommand{
   alias = [
     'vote'
   ]
@@ -87,7 +88,7 @@ export = new class implements Command{
       if(target instanceof GuildMember && type !== "text") {return TiCu.Log.Error("vote", "cible invalide")}
       crop = new RegExp(/^!vote\s+[^\s]+\s+/)
       if(!msg.content.match(crop)) {return TiCu.Log.Error("vote", "il manque des paramètres", msg)}
-      msg.channel.send(TiCu.VotesCollections.CreateEmbedAnon(target, type, voteThreshold(type)))
+      msg.channel.send(TiCu.VotesCollections.CreateEmbedAnon(target!!, type, voteThreshold(type)))
         .then(newMsg => {
           if (newMsg instanceof Message && TiCu.json(createJsonForAnonVote(newMsg, target!!, type))) {
             addReactionsToMessage(newMsg)

@@ -1,10 +1,10 @@
-import {Command, MemberXPType, Pub, Ticu} from "../../types"
+import {Command, MemberXPModel, Pub, Ticu} from "../../types"
 import {GuildMember, Message} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
 
-exports = new class implements Command {
+export = new class implements Command {
   alias = [
     'xpstatus'
   ]
@@ -35,16 +35,18 @@ exports = new class implements Command {
         } else {
           const mention = TiCu.Mention(params[0])
           const target = mention instanceof GuildMember ? mention.id : null
-          TiCu.Xp.getMember(target).then(
-            (entry: MemberXPType) => {
-              if (entry && mention instanceof GuildMember) {
-                msg.channel.send(`Le compte de ${mention.displayName} est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
-              } else {
-                msg.channel.send('Impossible de retrouver votre cible dans le système')
-                TiCu.Log.Commands.XPStatus(target)
+          if (target) {
+            TiCu.Xp.getMember(target).then(
+              (entry: MemberXPModel) => {
+                if (entry && mention instanceof GuildMember) {
+                  msg.channel.send(`Le compte de ${mention.displayName} est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
+                } else {
+                  msg.channel.send('Impossible de retrouver votre cible dans le système')
+                  TiCu.Log.Commands.XPStatus(target)
+                }
               }
-            }
-          )
+            )
+          } else {TiCu.Log.Error('xpstatus', 'Cible invalide', msg)}
         }
         break;
       case 2:
@@ -58,7 +60,7 @@ exports = new class implements Command {
         break;
       default:
         TiCu.Xp.getMember(msg.author.id).then(
-          (entry: MemberXPType) => {
+          (entry: MemberXPModel) => {
             if (entry) {
               msg.channel.send( `Votre compte est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
             } else {

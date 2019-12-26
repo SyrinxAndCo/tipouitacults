@@ -1,3 +1,12 @@
+import {MemberXPModel, MemberXPModelStatic, Pub, Ticu, TicuXp} from "../types"
+import {Guild, GuildMember, Message, MessageReaction, TextChannel, User} from "discord.js"
+import sequelize, {Sequelize} from "sequelize"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+declare const tipoui: Guild
+declare const DB: Sequelize
+
 const XPLINEAR = 179
 const XPJUMPPOWER = 1.5
 const XPLEVELJUMPRATE = 5
@@ -10,36 +19,36 @@ const XPREACTEDTO = 0.01
 
 const LEVELMAX = 100
 
-const MemberXP = DB.define('memberxp', {
+let MemberXP = <MemberXPModelStatic>DB.define('memberxp', {
   id: {
-    type: SequelizeDB.STRING,
+    type: sequelize.STRING,
     allowNull: false,
     primaryKey: true
   },
   xp: {
-    type: SequelizeDB.FLOAT
+    type: sequelize.FLOAT
   },
   level: {
-    type: SequelizeDB.INTEGER
+    type: sequelize.INTEGER
   },
   activated: {
-    type: SequelizeDB.BOOLEAN
+    type: sequelize.BOOLEAN
   }
 }, {
   timestamps: false
 });
 
-function xpByLevel(level) {
+function xpByLevel(level: number) {
   return Math.floor(XPLINEAR * Math.pow(Math.ceil(level/XPLEVELJUMPRATE), XPJUMPPOWER) * level);
 }
 
-const levelToXP = []
+const levelToXP: number[] = []
 for (let i=0;i<LEVELMAX;i++) {
   levelToXP[i] = xpByLevel(i)
 }
 
-function calculateLevelByXp(xp) {
-  let level;
+function calculateLevelByXp(xp: number) {
+  let level: number;
   for (level = 0; level < 50; level++) {
     if (xp < levelToXP[level]) break;
   }
@@ -47,12 +56,12 @@ function calculateLevelByXp(xp) {
   return level
 }
 
-function systemAccessAuthorised(msg) {
+function systemAccessAuthorised(msg: Message) {
   return msg.channel.type === 'text' && // is in a GuildChannel
     msg.guild.id === PUB.servers.commu // is in Tipoui Guild
 }
 
-function updateLevel(level, target) {
+function updateLevel(level: number, target: string) {
   return MemberXP.update(
     {
       level: level
@@ -66,33 +75,33 @@ function updateLevel(level, target) {
   )
 }
 
-function levelChange(entry, newLevel, previousLevel) {
+function levelChange(entry: MemberXPModel, newLevel: number, previousLevel: number) {
   TiCu.Log.XP.levelChange(entry, previousLevel)
   if (newLevel > previousLevel && newLevel%4 === 0 && newLevel !== 0) {
     TiCu.Commands.vote.autoTurquoise(entry.id, newLevel/4)
   }
 }
 
-function categoryMultiplier(categoryId) {
+function categoryMultiplier(categoryId: string) {
   const category = TiCu.Categories.findById(categoryId)
   return category ? category.xpFactor : 1
 }
 
-function channelMultiplier(channelId) {
+function channelMultiplier(channelId: string) {
   const channel = TiCu.Channels.findById(channelId)
   return channel ? channel.xpFactor : 1
 }
 
-function xpFromMessage(msg) {
+function xpFromMessage(msg: Message) {
   const charNb = msg.content.length
-  return charNb * XPPERCHARACTER * Math.pow(Math.ceil(charNb / CHARACTERSJUMPRATE), CHARACTERJUMPPOWER) * categoryMultiplier(msg.channel.parent.id) * channelMultiplier(msg.channel.id)
+  return charNb * XPPERCHARACTER * Math.pow(Math.ceil(charNb / CHARACTERSJUMPRATE), CHARACTERJUMPPOWER) * categoryMultiplier((msg.channel as TextChannel).parent.id) * channelMultiplier(msg.channel.id)
 }
 
-module.exports = {
-  updateXp: function (type, value, target) {
+export = new class implements TicuXp{
+  updateXp = function (this: TicuXp, type: string, value: number, target: string) {
     let booster = 1
     for (const role of Object.values(PUB.roles)) {
-      if (tipoui.members.get(target).roles.get(role.id)) booster = booster + role.xpAddedMultiplicator
+      if (tipoui.members.get(target)!.roles.get(role.id)) booster = booster + role.xpAddedMultiplicator
     }
     value = value * booster
     MemberXP.findOrCreate({where: {id: target}, defaults: {level: 0, xp: 0, activated: true}}).then(
@@ -126,23 +135,23 @@ module.exports = {
         }
       }
     )
-  },
-  updateAllXp: function (type, value) {
+  }
+  updateAllXp = function (this: TicuXp, type: string, value: number) {
     MemberXP.update({
-      xp: SequelizeDB.literal(`xp ${type === 'add' ? '+' : '-'} ${value}`)
+      xp: sequelize.literal(`xp ${type === 'add' ? '+' : '-'} ${value}`)
     }, {
       where: {
         activated: true
       },
       returning: true
     }).then(
-      ([numberUpdated, entries]) => {
+      ([numberUpdated, entries]: [number, MemberXPModel[]]) => {
         for (let i=0;i<numberUpdated;i++) {
           const previousLevel = calculateLevelByXp(entries[i].xp + (type === 'add' ? -value : value))
           const currentLevel = calculateLevelByXp(entries[i].xp)
           if (previousLevel !== currentLevel) {
             updateLevel(currentLevel, entries[i].id).then(
-              ([numberUpdated, subEntries]) => {
+              ([numberUpdated, subEntries]: [number, MemberXPModel[]]) => {
                 if (numberUpdated === 0) {
                   TiCu.Log.XP.error(this.errorTypes.NOUPDATE, entries[i].id)
                 } else if (numberUpdated !== 1) {
@@ -156,36 +165,36 @@ module.exports = {
         }
       }
     )
-  },
-  processXpFromMessage: function (type, msg) {
+  }
+  processXpFromMessage = function (this: TicuXp, type: string, msg: Message) {
     if (systemAccessAuthorised(msg)) {
       this.updateXp(type, xpFromMessage(msg), msg.author.id)
     }
-  },
-  processXpMessageUpdate: function (oldMsg, newMsg) {
+  }
+  processXpMessageUpdate = function (this: TicuXp, oldMsg: Message, newMsg: Message) {
     if (systemAccessAuthorised(oldMsg)) {
       const oldXp = xpFromMessage(oldMsg)
       const newXp = xpFromMessage(newMsg)
       this.updateXp('add', newXp - oldXp, oldMsg.author.id)
     }
-  },
-  reactionXp: function (type, reaction, usr) {
+  }
+  reactionXp = function (this: TicuXp, type: string, reaction: MessageReaction, usr: User) {
     if (systemAccessAuthorised(reaction.message)) {
       if (usr.id !== reaction.message.author.id && !usr.bot && !reaction.message.author.bot) {
-        const categoryMul = categoryMultiplier(reaction.message.channel.parent.id)
+        const categoryMul = categoryMultiplier((reaction.message.channel as TextChannel).parent.id)
         const channelMul = channelMultiplier(reaction.message.channel.id)
         this.updateXp(type, XPREACTION * categoryMul * channelMul, usr.id)
         this.updateXp(type, XPREACTEDTO * categoryMul * channelMul, reaction.message.author.id)
       }
     }
-  },
-  getMember: function(id) {
+  }
+  getMember = function(id: string) {
     return MemberXP.findByPk(id)
-  },
-  getXpByLevel: function(level) {
+  }
+  getXpByLevel = function(level: number) {
     return xpByLevel(level)
-  },
-  changeMemberStatus: function(target, activated, msg) {
+  }
+  changeMemberStatus = function(this: TicuXp, target: string, activated: boolean, msg: Message) {
     MemberXP.update({
       activated: activated
     }, {
@@ -200,21 +209,21 @@ module.exports = {
         } else if (numberUpdated !== 1) {
           TiCu.Log.XP.error(this.errorTypes.MULTIPLEUPDATE, target)
         } else {
-          if (msg) msg.channel.send(`Le compte de ${TiCu.Mention(target).displayName} est maintenant ${entries[0].activated ? 'activé' : 'désactivé'} dans le système`)
+          if (msg) msg.channel.send(`Le compte de ${(TiCu.Mention(target) as GuildMember).displayName} est maintenant ${entries[0].activated ? 'activé' : 'désactivé'} dans le système`)
           TiCu.Log.XP.statusChange(entries[0])
         }
       }
     )
-  },
-  resetEveryOneXp: function() {
+  }
+  resetEveryOneXp = function() {
     MemberXP.update({
       xp: 0,
       level: 0
     }, {
       where: {}
     })
-  },
-  errorTypes: {
+  }
+  errorTypes = {
     AUTOVOTE: 'autovote',
     MULTIPLEUPDATE: 'multipleUpdate',
     NOUPDATE: 'noUpdate'

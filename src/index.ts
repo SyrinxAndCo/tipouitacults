@@ -3,7 +3,7 @@ import {Express} from "express"
 import {Sequelize} from "sequelize"
 import {Client, Guild, GuildMember, Message, MessageReaction, RichEmbed, TextChannel, User} from "discord.js"
 import {EventEmitter} from "events"
-import {Authorization, AuthorizationsCommand, Pub, Ticu} from "./types"
+import {Pub, Ticu} from "./types"
 
 const crypto = require('crypto');
 const CFG = require("./private.json")
@@ -69,8 +69,8 @@ Discord.once("ready", () => {
     maxilog = Discord.channels.get(PUB.salons.maxiLog.id) as TextChannel
     minilog = Discord.channels.get(PUB.salons.miniLog.id) as TextChannel
     console.log(TiCu.Date("log") + " : Connexion à Discord.")
-    //maxilog.send(TiCu.Date("log") + " : Reconnexion.")
-    //minilog.send("Coucou, je suis de retour ♥")
+    maxilog.send(TiCu.Date("log") + " : Reconnexion.")
+    minilog.send("Coucou, je suis de retour ♥")
     TiCu.VotesCollections.Startup()
     Server.get(
       "/discord/invite/:key",
@@ -159,7 +159,7 @@ Discord.on("message", (msg) => {
       let cmd: string = params.shift()!!
       TiCu.Commands[cmd] ? TiCu.Authorizations.Command(cmd, msg) ? TiCu.Commands[cmd].run(params, msg) : TiCu.Log.Error(cmd, "permissions manquantes", msg) : msg.react("❓")
     } else {
-      //parseForAutoCommands(msg)
+      parseForAutoCommands(msg)
     }
   }
 })

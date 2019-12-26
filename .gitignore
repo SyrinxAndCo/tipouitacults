@@ -1,5 +1,5 @@
 package-lock.json
-src/rivate.json
+src/private.json
 src/private/*
 src/private/votes.json
 src/private/quarantaine.json

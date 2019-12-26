@@ -55,7 +55,7 @@ export = new class implements Command{
                   const reaction = collected.firstKey();
                   if (reaction === "👍") {
                     reasonTxt ? target.kick(reasonTxt) : target.kick()
-                    TiCu.Log.Commands.Kick(target, reasonTxt, msg)
+                    TiCu.Log.Commands.Kick(target.user, reasonTxt, msg)
                   } else {
                     return TiCu.Log.Error("kick", "annulation", msg)
                   }

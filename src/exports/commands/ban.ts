@@ -55,7 +55,7 @@ export = new class implements Command {
                   const reaction = collected.firstKey();
                   if (reaction === "👍") {
                     reasonTxt ? target.ban(reasonTxt) : target.ban()
-                    TiCu.Log.Commands.Ban(target, reasonTxt, msg)
+                    TiCu.Log.Commands.Ban(target.user, reasonTxt, msg)
                   } else {
                     return TiCu.Log.Error("ban", "annulation", msg)
                   }

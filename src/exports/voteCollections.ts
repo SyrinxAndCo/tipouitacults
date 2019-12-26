@@ -66,7 +66,7 @@ function checkThreshold(vote: JsonVote, collector: ReactionCollector) {
 function updateVotes(reaction: MessageReaction, collector: ReactionCollector) {
   let votesJSON = JSON.parse(fs.readFileSync(VotesFile))
   let msg = reaction.message
-  let user
+  let user: string = ''
   for (const id of reaction.users.keyArray()) {
     if (id !== PUB.users.tipouitaculte) {
       user = id

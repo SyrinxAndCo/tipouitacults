@@ -23,6 +23,6 @@ export = new class implements ReactionsCommand {
     }
   }
   run = function(reaction: MessageReaction, usr: GuildMember, type: string) {
-    TiCu.Log.Reactions.Heart(reaction, usr, type)
+    TiCu.Log.Reactions.Heart(reaction, usr.user, type)
   }
 }

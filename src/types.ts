@@ -1,6 +1,17 @@
-import {Channel, GuildMember, Message, MessageReaction, ReactionCollector, RichEmbed, Role, User} from "discord.js"
+import {
+    Channel,
+    GuildMember,
+    Message,
+    MessageReaction,
+    ReactionCollector,
+    RichEmbed,
+    Role,
+    TextChannel,
+    User
+} from "discord.js"
 import { Model } from "sequelize/types"
 import {BuildOptions} from "sequelize"
+import {Request} from "express"
 
 export type Authorization = {
     type: string
@@ -104,9 +115,58 @@ export type TicuXp = {
     }
 }
 
+export type TicuLogCommands = {
+    Ban : (target: User, reason: string, msg: Message) => void
+    Bienvenue : (target: GuildMember, msg: Message) => void
+    Color : (action: string, color: string, msg: Message) => void
+    Kick : (target: User, reason: string, msg: Message) => void
+    Purifier : (target: GuildMember, msg: Message) => void
+    Quarantaine : (action: boolean, target: GuildMember, reason: string, msg: Message) => void
+    Roles : (target: GuildMember, action: string, roles: string[], msg: Message) => void
+    Send : (cmdMsg: Message, newMsg: Message) => void
+    Vote : {
+        Public : (msg: Message) => void
+        Anon : (type: string, params: string[], newMsg: Message, msg: Message) => void
+        AutoTurquoise: (newMsg: Message, target: string, voteNumber: number) => void
+    }
+    Level: (target: string) => void
+    XPStatus: (target: string) => void
+    Xp: (msg: Message, target: string, value: string, give: boolean) => void
+    Raid: (msg: Message, arg: string) => void
+    Avatar: (msg: Message, target: GuildMember) => void
+}
+
+export type TicuLog = {
+    Error : (cmd: string, err: string, msg: Message) => void
+    Json : (type: string, target: string) => void
+    Quarantaine : (type: string, newMsg: Message, msg: Message) => void
+    UpdatedQuarantaine : (type: string, newMsg: Message, msg: Message, error?: string) => void
+    DM : (embed: RichEmbed, msg: Message) => void
+    UpdatedDM : (embed: RichEmbed, msg: Message, error?: string) => void
+    VoteUpdate : (usr: string, emoji: string, msg: Message) => void
+    VoteCollector : (msg: Message) => void
+    VoteDone :  (reason: string, type: string, msg: Message, target?: string) => void
+    ServerPage : (req: Request) => void
+    Commands : TicuLogCommands
+    ReactionError: (reaction: MessageReaction, usr: User, type: string) => void
+    Reactions: {
+        genericReaction: (reaction: MessageReaction, usr: User, type: string) => void
+        Heart: (reaction: MessageReaction, usr: User, type: string) => void
+    }
+    Auto: {
+        SuchTruc: (msg: Message) => void
+    }
+    XP: {
+        newEntry: (entry: MemberXPModel) => void
+        levelChange: (entry: MemberXPModel, previousLevel: number) => void
+        statusChange: (entry: MemberXPModel) => void
+        error: (type: string, target: string) => void
+    }
+}
+
 export type Ticu = {
     Date : (type: string) => string
-    Log : any
+    Log : TicuLog
     json : (data: JsonTicu) => any
     Xp : TicuXp
     Mention : (param: string) => Role|Channel|GuildMember|boolean|undefined

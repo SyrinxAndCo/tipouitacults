@@ -28,7 +28,7 @@ export = new class implements Command {
     roleNames : "Tous"
   }
   run = function(params: string[], msg: Message) {
-    let action: string|boolean
+    let action: string
     let roles: string[] = []
     let target = TiCu.Mention(params[0])
     switch(params[1]) {
@@ -48,7 +48,7 @@ export = new class implements Command {
         action = "removeRoles"
         break
       default:
-        action = false
+        action = ''
     }
     for(let i=2;i<params.length;i++) {
       for (const role of Object.values(PUB.roles)) {
@@ -64,7 +64,7 @@ export = new class implements Command {
       if(action) {
         if(roles && roles.length === params.length - 2) {
           (target as any)[action](roles)
-            .then(() => TiCu.Log.Commands.Roles(target, action, roles, msg))
+            .then(() => TiCu.Log.Commands.Roles(target as GuildMember, action, roles, msg))
             .catch(() => TiCu.Log.Error("roles", "erreur API", msg))
         } else TiCu.Log.Error("roles", "liste de rôles invalide", msg)
       } else TiCu.Log.Error( "roles", "ajouter ou enlever ?", msg)

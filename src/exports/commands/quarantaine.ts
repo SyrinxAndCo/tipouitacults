@@ -38,8 +38,9 @@ export = new class implements Command {
     let target: GuildMember
     let mention = TiCu.Mention(params[0])
     if(mention instanceof GuildMember) {target = mention} else return TiCu.Log.Error("quarantaine", "cible invalide", msg)
-    let reason : boolean|string = !!params[2]
-    if(reason) {
+    let hasReason : boolean = !!params[2]
+    let reason : string
+    if(hasReason) {
       let cropedMessage = msg.content.match(crop)
       if (cropedMessage) {
         reason = msg.content.substring(cropedMessage[1].length)
@@ -79,7 +80,7 @@ export = new class implements Command {
                             try {
                               target.addRole(PUB.roles.quarantaineRole.id)
                               target.removeRoles(roles)
-                                .then(TiCu.Log.Commands.Quarantaine(true, target, reason, msg))
+                                .then(() => TiCu.Log.Commands.Quarantaine(true, target, reason, msg))
                             } catch {
                               TiCu.Log.Error("quarantaine", "erreur de modification des rôles", msg)
                             }
@@ -128,9 +129,9 @@ export = new class implements Command {
                               try {
                                 target.removeRole(PUB.roles.quarantaineRole.id)
                                 target.addRoles(read[target.id].roles)
-                                  .then(TiCu.Log.Prefixed.Quarantaine(false, target, reason, msg))
+                                  .then(() => TiCu.Log.Commands.Quarantaine(false, target, reason, msg))
                               } catch {
-                                TiCu.Log.Error("quarantaine", "erreur de modification des rôles")
+                                TiCu.Log.Error("quarantaine", "erreur de modification des rôles", msg)
                               }
                             } else TiCu.Log.Error("quarantaine", "erreur de suppression des données de quarantaine", msg)
                           } else TiCu.Log.Error("quarantaine", "impossible de récupérer les rôles passés", msg)

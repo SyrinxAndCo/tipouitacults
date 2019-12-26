@@ -1,4 +1,4 @@
-import { Message } from "discord.js"
+import {GuildMember, Message, MessageReaction} from "discord.js"
 
 export type Authorization = {
     type: string
@@ -17,11 +17,39 @@ export type AuthorizationsCommand = {
     roleNames: string
 }
 
+export type AuthorizationsAuto = {
+    salons : Authorization
+    users : Authorization
+}
+
+export type AuthorizationsReactions = {
+    messages : Authorization
+    salons : Authorization
+    users : Authorization
+}
+
 export type Command = {
     alias: string[]
     activated: boolean
     authorizations : AuthorizationsCommand,
     run : (params: string[], msg: Message) => void
+}
+
+export type AutoCommand = {
+    name : string
+    desc : string
+    schema: string
+    trigger: string
+    authorizations : AuthorizationsAuto
+    run : (msg: Message) => void
+}
+
+export type ReactionsCommand = {
+    name : string
+    desc : string
+    emoji: string
+    authorizations : AuthorizationsReactions
+    run : (reaction: MessageReaction, usr: GuildMember, type: string) => void
 }
 
 export type Ticu = {
@@ -37,8 +65,12 @@ export type Ticu = {
     Commands : {
         [prop: string]: Command
     }
-    Reactions : any
-    Auto : any
+    Reactions : {
+        [prop: string]: ReactionsCommand
+    }
+    Auto : {
+        [prop: string]: AutoCommand
+    }
 }
 
 export type CategoryPub = {

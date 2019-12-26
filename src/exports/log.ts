@@ -30,10 +30,10 @@ export = {
     maxilog.send(TiCu.Date("log") + " : Quarantaine - " + type + "\n" + newMsg.url)
     msg.react("💬")
   },
-  UpdatedQuarantaine : function(type: string, newMsg: Message, msg: Message, error?: string) {
+  UpdatedQuarantaine : function(type: string, newMsg: Message|undefined, msg: Message, error?: string) {
     if (error !== undefined) {
       maxilog.send(`${TiCu.Date("log")} : UpdatedQuarantaine Error\n${error}`)
-    } else {
+    } else if(newMsg) {
       maxilog.send(TiCu.Date("log") + " : UpdatedQuarantaine - " + type + "\n" + newMsg.url)
       msg.react("✅")
     }
@@ -43,7 +43,7 @@ export = {
     maxilog.send(embed)
     msg.react("💬")
   },
-  UpdatedDM : function(embed: RichEmbed, msg: Message, error?: string) {
+  UpdatedDM : function(embed: RichEmbed|undefined, msg: Message, error?: string) {
     if (error !== undefined) {
       maxilog.send(`${TiCu.Date("log")} : UpdatedDM Error\n${error}`)
     } else {

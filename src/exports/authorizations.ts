@@ -1,5 +1,5 @@
 import {Authorization, AutoCommand, ReactionsCommand, Ticu, TicuAuthorization} from "../types"
-import {GuildMember, Message, MessageReaction, Role} from "discord.js"
+import {Message, MessageReaction, Role, User} from "discord.js"
 
 declare const TiCu: Ticu
 
@@ -33,7 +33,7 @@ export = new class implements TicuAuthorization {
     } else role = true
     return chan && role && auth
   }
-  Reaction = function(reactionFunction: ReactionsCommand, reaction: MessageReaction, usr: GuildMember) {
+  Reaction = function(reactionFunction: ReactionsCommand, reaction: MessageReaction, usr: User) {
     let messages = authorized(reactionFunction.authorizations.messages, reaction.message.id)
     let salons = authorized(reactionFunction.authorizations.salons, reaction.message.channel.id)
     let users = authorized(reactionFunction.authorizations.users, usr.id)

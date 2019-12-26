@@ -48,10 +48,6 @@ export type Command = {
     run : (params: string[], msg: Message) => void
 }
 
-export type VoteCommand = Command & {
-    autoTurquoise: (targetId: string, voteNumber: number) => void//so fucking ugly
-}
-
 export type AutoCommand = {
     name : string
     desc : string
@@ -66,12 +62,12 @@ export type ReactionsCommand = {
     desc : string
     emoji: string
     authorizations : AuthorizationsReactions
-    run : (reaction: MessageReaction, usr: GuildMember, type: string) => void
+    run : (reaction: MessageReaction, usr: User, type: string) => void
 }
 
 export type TicuAuthorization = {
     Command : (cmd: string, msg: Message) => boolean
-    Reaction : (reactionFunction: ReactionsCommand, reaction: MessageReaction, usr: GuildMember) => boolean
+    Reaction : (reactionFunction: ReactionsCommand, reaction: MessageReaction, usr: User) => boolean
     Auto : (autoCommand: AutoCommand, msg: Message) => boolean
 }
 
@@ -140,9 +136,9 @@ export type TicuLog = {
     Error : (cmd: string, err: string, msg: Message) => void
     Json : (type: string, target: string) => void
     Quarantaine : (type: string, newMsg: Message, msg: Message) => void
-    UpdatedQuarantaine : (type: string, newMsg: Message, msg: Message, error?: string) => void
+    UpdatedQuarantaine : (type: string, newMsg: Message|undefined, msg: Message, error?: string) => void
     DM : (embed: RichEmbed, msg: Message) => void
-    UpdatedDM : (embed: RichEmbed, msg: Message, error?: string) => void
+    UpdatedDM : (embed: RichEmbed|undefined, msg: Message, error?: string) => void
     VoteUpdate : (usr: string, emoji: string, msg: Message) => void
     VoteCollector : (msg: Message) => void
     VoteDone :  (reason: string, type: string, msg: Message, target?: string) => void
@@ -164,6 +160,14 @@ export type TicuLog = {
     }
 }
 
+export type TicuVote = {
+    voteThreshold: (type: string) => number
+    addReactionsToMessage: (msg: Message) => void
+    createJsonForAnonVote: (msg: Message, target: GuildMember, type: string) => JsonTicu
+    autoTurquoise: (targetId: string, voteNumber: number) => void
+}
+
+
 export type Ticu = {
     Date : (type: string) => string
     Log : TicuLog
@@ -174,9 +178,9 @@ export type Ticu = {
     VotesCollections : TicuVoteCollection
     Categories : any
     Channels : any
+    Vote : TicuVote
     Commands : {
         [prop: string]: Command
-        vote: VoteCommand
     }
     Reactions : {
         [prop: string]: ReactionsCommand

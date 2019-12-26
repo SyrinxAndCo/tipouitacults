@@ -1,20 +1,38 @@
 // Init
+import {Express} from "express"
+import {Sequelize} from "sequelize"
+import {Client, Guild, GuildMember, Message, MessageReaction, RichEmbed, TextChannel, User} from "discord.js"
+import {EventEmitter} from "events"
+import {Authorization, AuthorizationsCommand, Pub, Ticu} from "./types"
+
 const crypto = require('crypto');
 const CFG = require("./private.json")
 const EXPRESS = require("express")
 const EventsModule = require("events")
 const fs = require('fs');
-global.Server = EXPRESS()
-global.SequelizeDB = require("sequelize")
-global.DB = new SequelizeDB(CFG.sequelizeURL, {logging: false})
-global.DiscordNPM = require("discord.js")
-global.Discord = new DiscordNPM.Client({disabledEvents: ['TYPING_START']})
-global.Event = new EventsModule.EventEmitter()
-global.PUB = require("./public.json");
-global.VotesFile = "private/votes.json";
-global.VotesEmojis = ["✅","⚪","🛑","⏱"];
-global.activeInvite = true
-global.TiCu = {
+
+declare let Server: Express
+declare let DB: Sequelize
+declare let Discord: Client
+declare let Event: EventEmitter
+declare let PUB: Pub
+declare let VotesFile: string
+declare let VotesEmojis: string[]
+declare let activeInvite: boolean
+declare let TiCu: Ticu
+declare let tipoui: Guild
+declare let maxilog: TextChannel
+declare let minilog: TextChannel
+
+Server = EXPRESS()
+DB = new Sequelize(CFG.sequelizeURL, {logging: false})
+Discord = new Client({disabledEvents: ['TYPING_START']})
+Event = new EventsModule.EventEmitter()
+PUB = require("./public.json");
+VotesFile = "private/votes.json";
+VotesEmojis = ["✅","⚪","🛑","⏱"];
+activeInvite = true
+TiCu = {
   Date : require("./exports/date.js"),
   Log : require("./exports/log.js"),
   json : require("./exports/json.js"),
@@ -24,6 +42,7 @@ global.TiCu = {
   VotesCollections : require("./exports/voteCollections.js"),
   Categories : require("./exports/categories.js"),
   Channels : require("./exports/channels.js"),
+  Vote : require("./exports/vote.js"),
   Commands : {},
   Reactions : {
     heart : require("./exports/reactions/heart.js")
@@ -46,9 +65,9 @@ for (const command of commandFiles) {
 // Discord
 Discord.login( CFG.discordToken )
 Discord.once("ready", () => {
-    global.tipoui = Discord.guilds.get(PUB.servers.commu)
-    global.maxilog = Discord.channels.get(PUB.salons.maxiLog.id)
-    global.minilog = Discord.channels.get(PUB.salons.miniLog.id)
+    tipoui = Discord.guilds.get(PUB.servers.commu)!!
+    maxilog = Discord.channels.get(PUB.salons.maxiLog.id) as TextChannel
+    minilog = Discord.channels.get(PUB.salons.miniLog.id) as TextChannel
     console.log(TiCu.Date("log") + " : Connexion à Discord.")
     //maxilog.send(TiCu.Date("log") + " : Reconnexion.")
     //minilog.send("Coucou, je suis de retour ♥")
@@ -61,7 +80,7 @@ Discord.once("ready", () => {
           .digest('hex');
         if (activeInvite) {
           if (req.params.key === hash) {
-            Discord.channels.get(PUB.salons.invite.id)
+            (Discord.channels.get(PUB.salons.invite.id) as TextChannel)
               .createInvite({maxUses: 1, maxAge: 300})
               .then(invite => {
                   res.send(invite.url)
@@ -78,7 +97,7 @@ Discord.once("ready", () => {
     )
   })
 
-function parseForAutoCommands(msg) {
+function parseForAutoCommands(msg: Message) {
   for (const autoCommand of Object.values(TiCu.Auto)) {
     if (msg.content.indexOf(autoCommand.trigger) !== -1 && TiCu.Authorizations.Auto(autoCommand, msg)) {
       autoCommand.run(msg)
@@ -86,8 +105,8 @@ function parseForAutoCommands(msg) {
   }
 }
 
-function createEmbedCopy(msg, user, edited = false, previousContent) {
-  let embed = new DiscordNPM.RichEmbed()
+function createEmbedCopy(msg: Message, user: GuildMember, edited?: boolean, previousContent?: string) {
+  let embed = new RichEmbed()
     .setColor(user.displayColor)
     .setAuthor(user.displayName, user.user.avatarURL, msg.url)
     .setDescription(edited ? previousContent : msg.content)
@@ -105,8 +124,8 @@ function createEmbedCopy(msg, user, edited = false, previousContent) {
   return embed
 }
 
-function retrieveMessageForEdit(originMsg, channel) {
-  return tipoui.channels.get(channel).messages.find(
+function retrieveMessageForEdit(originMsg: Message, channel: string) {
+  return (tipoui.channels.get(channel) as TextChannel).messages.find(
     msg => msg.author.bot && msg.embeds && msg.embeds[0].author.url === originMsg.url
   )
 }
@@ -117,27 +136,27 @@ Discord.on("message", (msg) => {
     if(msg.channel.type === "dm" ) {
       let user = tipoui.members.get(msg.author.id) ? tipoui.members.get(msg.author.id) : undefined
       if(user) {
-        if(!user.roles.find(e => e === PUB.roles.quarantaineRole.id)) {
-          let embed = createEmbedCopy(msg, user)
-          tipoui.channels.get(PUB.salons.botsecret.id).send(embed)
+        if(!user.roles.find(e => e.id === PUB.roles.quarantaineRole.id)) {
+          let embed = createEmbedCopy(msg, user);
+          (tipoui.channels.get(PUB.salons.botsecret.id) as TextChannel).send(embed)
             .then(() => TiCu.Log.DM(embed, msg))
         } else msg.reply("utilise plutôt <#" + PUB.salons.quarantaineUser.id + "> s'il te plaît. Ce message n'a pas été transmis.")
       } else msg.reply("je ne parle qu'aux gens de Tipoui ♥")
     } else if(msg.channel.id === PUB.salons.quarantaineUser.id || msg.channel.id === PUB.salons.quarantaineVigi.id) {
       if(msg.channel.id === PUB.salons.quarantaineUser.id) {
-        let user = msg.member
-        tipoui.channels.get(PUB.salons.quarantaineVigi.id).send(createEmbedCopy(msg, user))
-          .then(newMsg => TiCu.Log.Quarantaine("reçu", newMsg, msg))
+        let user = msg.member;
+        (tipoui.channels.get(PUB.salons.quarantaineVigi.id) as TextChannel).send(createEmbedCopy(msg, user))
+          .then(newMsg => {if (newMsg instanceof Message) TiCu.Log.Quarantaine("reçu", newMsg, msg)})
       } else if(msg.channel.id === PUB.salons.quarantaineVigi.id) {
-        tipoui.channels.get(PUB.salons.quarantaineUser.id).send(msg.content)
-          .then(newMsg => TiCu.Log.Quarantaine("envoyé", newMsg, msg))
+        (tipoui.channels.get(PUB.salons.quarantaineUser.id) as TextChannel).send(msg.content)
+          .then(newMsg => { if (newMsg instanceof Message) TiCu.Log.Quarantaine("envoyé", newMsg, msg)})
       }
     } else if(msg.content.match(/^![a-zA-Z]/)) {
-      let params = []
+      let params: string[] = []
       msg.content.substring(1).split(/\s+/).forEach(value => {
         params.push(value.toLowerCase())
       })
-      let cmd = params.shift()
+      let cmd: string = params.shift()!!
       TiCu.Commands[cmd] ? TiCu.Authorizations.Command(cmd, msg) ? TiCu.Commands[cmd].run(params, msg) : TiCu.Log.Error(cmd, "permissions manquantes", msg) : msg.react("❓")
     } else {
       //parseForAutoCommands(msg)
@@ -157,7 +176,7 @@ Discord.on("messageUpdate", (oldMsg, newMsg) => {
     if(newMsg.channel.type === "dm" ) {
       let user = tipoui.members.get(newMsg.author.id) ? tipoui.members.get(newMsg.author.id) : undefined
       if(user) {
-        if(!user.roles.find(e => e === PUB.roles.quarantaineRole.id)) {
+        if(!user.roles.find(e => e.id === PUB.roles.quarantaineRole.id)) {
           const previousBotEmbed = retrieveMessageForEdit(oldMsg, PUB.salons.botsecret.id)
           if (previousBotEmbed) {
             let embed = createEmbedCopy(newMsg, user, true, previousBotEmbed.embeds[0].description)
@@ -189,7 +208,7 @@ Discord.on("messageUpdate", (oldMsg, newMsg) => {
  * @param usr User
  * @param type "add" | "remove"
  */
-function parseReaction(reaction, usr, type) {
+function parseReaction(reaction: MessageReaction, usr: User, type: string) {
   if (!usr.bot && !reaction.message.author.bot && reaction.message.guild.id === PUB.servers.commu) {
     TiCu.Xp.reactionXp(type, reaction, usr)
     let found = false
@@ -214,8 +233,8 @@ Discord.on("messageReactionRemove", (reaction, usr) => {
 Discord.on("guildMemberAdd", usr => {
   if(usr.guild.id === tipoui.id) {
     maxilog.send(TiCu.Date("log") + " : Arrivée de membre\n" + usr.user.toString() + " - " + usr.user.tag + " - " + usr.id)
-    minilog.send("Arrivée de " + usr.user.toString() + " - " + usr.user.tag + " - " + usr.id)
-    tipoui.channels.get(PUB.salons.genTP.id).send("Oh ! Bienvenue <@" + usr.id + "> ! Je te laisse lire les Saintes Règles, rajouter tes pronoms dans ton pseudo et nous faire une ptite présentation dans le salon qui va bien :heart:\nSi tu n'as pas fait vérifier ton numéro de téléphone ou d'abonnement Nitro, il va aussi te falloir aussi attendre 10 petites minutes que Discord s'assure tu n'es pas une sorte d'ordinateur mutant venu de l'espace... Même si en vrai ça serait trop cool quand même !")
+    minilog.send("Arrivée de " + usr.user.toString() + " - " + usr.user.tag + " - " + usr.id);
+    (tipoui.channels.get(PUB.salons.genTP.id) as TextChannel).send("Oh ! Bienvenue <@" + usr.id + "> ! Je te laisse lire les Saintes Règles, rajouter tes pronoms dans ton pseudo et nous faire une ptite présentation dans le salon qui va bien :heart:\nSi tu n'as pas fait vérifier ton numéro de téléphone ou d'abonnement Nitro, il va aussi te falloir aussi attendre 10 petites minutes que Discord s'assure tu n'es pas une sorte d'ordinateur mutant venu de l'espace... Même si en vrai ça serait trop cool quand même !")
   }
 })
 Discord.on("guildMemberRemove", usr => {
@@ -227,8 +246,8 @@ Discord.on("guildMemberRemove", usr => {
 Discord.on("guildMemberUpdate", (oldUsr, newUsr) => {
   if(newUsr.roles.get(PUB.roles.turquoise.id) && !oldUsr.roles.get(PUB.roles.turquoise.id)) {
     newUsr.addRole(PUB.roles.turquoiseColor.id)
-    newUsr.addRole(PUB.roles.vote.id)
-    tipoui.channels.get(PUB.salons.genTutu.id).send("Bienvenue parmi les 💠Turquoises <@" + newUsr.id + "> ! <:turquoise_heart:417784485724028938>\nTu as désormais accès à de nouveaux salons, notamment <#453706061031931905> où tu pourras découvrir les spécificités de cette promotion. Par ailleurs, n'hésite pas à consulter <#453702956315836436> pour voir les rôles auxquels tu peux prétendre, et demande-les-moi par message privé.")
+    newUsr.addRole(PUB.roles.vote.id);
+    (tipoui.channels.get(PUB.salons.genTutu.id) as TextChannel).send("Bienvenue parmi les 💠Turquoises <@" + newUsr.id + "> ! <:turquoise_heart:417784485724028938>\nTu as désormais accès à de nouveaux salons, notamment <#453706061031931905> où tu pourras découvrir les spécificités de cette promotion. Par ailleurs, n'hésite pas à consulter <#453702956315836436> pour voir les rôles auxquels tu peux prétendre, et demande-les-moi par message privé.")
   }
   if(newUsr.roles.get(PUB.roles.luxure.id)) {
     if(!newUsr.roles.get(PUB.roles.hammer.id) && newUsr.roles.get(PUB.roles.demolisseureuse.id)) {newUsr.addRole(PUB.roles.hammer.id)}

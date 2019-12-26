@@ -1,6 +1,15 @@
-const DiscordNPM = require("discord.js")
-module.exports = {
-  authorizations : {
+import {Command, Pub, Ticu} from "../../types"
+import {Message, RichEmbed} from "discord.js"
+
+declare const TiCu: Ticu
+declare const PUB: Pub
+
+export = new class implements Command{
+  alias = [
+    'help'
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "any"
     },
@@ -16,10 +25,10 @@ module.exports = {
     channels : "Tous",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params: string[], msg: Message) {
     let target = params[0]
-    let embed = new DiscordNPM.RichEmbed()
+    let embed = new RichEmbed()
     embed.setColor(38600)
     if(TiCu.Commands[target]) {
       let cmd = TiCu.Commands[target].authorizations

@@ -1,4 +1,8 @@
 module.exports = {
+  alias: [
+    'xpstatus'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "whitelist",

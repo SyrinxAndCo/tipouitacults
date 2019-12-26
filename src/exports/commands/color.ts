@@ -1,4 +1,11 @@
-function checkRoleUsage(role, usr, msg) {
+import {Command, Pub, Ticu} from "../../types"
+import {Guild, GuildMember, Message, Role} from "discord.js"
+
+declare const TiCu: Ticu
+declare const PUB: Pub
+declare const tipoui: Guild
+
+function checkRoleUsage(role: Role, usr: GuildMember, msg: Message) {
   if((role.members.size === 1 && role.members.get(msg.member.id) || role.members.size === 0) && role.name !== "#11e0e6") {
     let roleName = role.name
     role.delete()
@@ -7,8 +14,12 @@ function checkRoleUsage(role, usr, msg) {
 }
 let colorHexa = new RegExp(/^#[\da-f]{6}$/)
 
-module.exports = {
-  authorizations : {
+export = new class implements Command{
+  alias = [
+    'color'
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.bots.id]
@@ -25,11 +36,11 @@ module.exports = {
     channels : "Maison des Bots",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params: string[], msg: Message) {
     let input = params[0]
     let usr = msg.member
-    let oldRole = usr.roles.find(e => e.name.match(colorHexa))
+    let oldRole = usr.roles.find(e => !!e.name.match(colorHexa))
     let newRole = tipoui.roles.find(e => e.hexColor === input)
     if(usr.roles.get(PUB.roles.turquoise.id)) {
       if(input === "none" || input === "remove" || input === "reset" || input === "enlever" || input === "réinitialiser" || input === "turquoise" || input === "#11e0e6"){
@@ -44,7 +55,7 @@ module.exports = {
       } else if(oldRole) {
         if(input.match(colorHexa)) {
           if(!newRole) {
-            tipoui.createRole({name: input, color: input, position: "33"})
+            tipoui.createRole({name: input, color: input, position: 33})
               .then(createdRole => {
                 usr.addRole(createdRole)
                 usr.removeRole(oldRole)

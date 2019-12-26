@@ -1,4 +1,11 @@
-function generateProgressionBar(percentage) {
+import {Command, MemberXPType, Pub, Ticu} from "../../types"
+import {Guild, GuildMember, Message, RichEmbed} from "discord.js"
+
+declare const TiCu: Ticu
+declare const PUB: Pub
+declare const tipoui: Guild
+
+function generateProgressionBar(percentage: number) {
   const complete = '▰'
   const incomplete = '▱'
   let bar = ""
@@ -12,13 +19,13 @@ function generateProgressionBar(percentage) {
   return bar
 }
 
-function makeEmbed(user, msg, entry) {
+function makeEmbed(user: GuildMember, msg: Message, entry: MemberXPType) {
   const totalXpForNextLevel = TiCu.Xp.getXpByLevel(entry.level + 1)
   const totalXpForCurrentLevel = TiCu.Xp.getXpByLevel(entry.level)
   const xpInLevelForMember = entry.xp - totalXpForCurrentLevel
   const relativeXpForNextLevel = totalXpForNextLevel - totalXpForCurrentLevel
   const completionPercentage = Math.floor(xpInLevelForMember / relativeXpForNextLevel * 100)
-  const embed = new DiscordNPM.RichEmbed()
+  const embed = new RichEmbed()
     .setColor(user.displayColor)
     .setAuthor(`Niveau de ${user.displayName}`, user.user.avatarURL, msg.url)
   embed.addField("Niveau", entry.level, true)
@@ -30,8 +37,13 @@ function makeEmbed(user, msg, entry) {
   return embed
 }
 
-module.exports = {
-  authorizations : {
+export = new class implements Command {
+  alias = [
+    'level',
+    'niveau'
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.bots.id]
@@ -48,15 +60,15 @@ module.exports = {
     channels : "🦄la-maison-de-la-bot",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params: string[], msg: Message) {
     const memberParam = params[0] ? TiCu.Mention(params[0]) : null
     const target = memberParam ? memberParam.id : msg.author.id
      TiCu.Xp.getMember(target).then(
-       entry => {
+       (entry: MemberXPType) => {
          if (entry) {
            if (entry.activated) {
-             msg.channel.send(makeEmbed(tipoui.members.get(target), msg, entry))
+             msg.channel.send(makeEmbed(tipoui.members.get(target)!!, msg, entry))
            } else {
              msg.channel.send(`${memberParam ? 'Le compte de ' + memberParam.displayName : 'Votre compte'} est désactivé dans le système`)
            }

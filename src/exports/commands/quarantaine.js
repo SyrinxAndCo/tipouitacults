@@ -3,6 +3,10 @@ let colorRole = new RegExp(/^#[\da-f]+$/)
 let quarantaineFile = "/media/usb/nodejs/tipouitaculte/private/quarantaine.json"
 
 module.exports = {
+  alias: [
+    'quarantaine'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "whitelist",

@@ -1,4 +1,8 @@
 module.exports = {
+  alias: [
+    'xp'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "whitelist",
@@ -13,7 +17,7 @@ module.exports = {
     name : "XP",
     desc : "Donner ou retirer de l'expérience à un ou plusieurs membres",
     schema : "!xp <[give|take]> <@|'all'> <value> (reason)",
-    channels : "#💠interface-tipoui",
+    channels : "💠interface-tipoui",
     authors : "Toustes",
     roleNames : "Tous"
   },

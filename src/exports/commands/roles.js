@@ -1,4 +1,8 @@
 module.exports = {
+  alias: [
+    'roles'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "whitelist",

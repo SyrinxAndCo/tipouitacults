@@ -1,4 +1,8 @@
 module.exports = {
+  alias: [
+    'purifier'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "whitelist",

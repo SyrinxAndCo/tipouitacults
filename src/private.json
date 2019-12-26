@@ -1,0 +1,5 @@
+{
+	"sequelizeURL": "postgres://tipouitaculte:tipouitaculte@localhost:5432/tipouitaculte",
+	"discordToken": "NjM4NDEwOTIyNTI3ODE3NzQ4.XbcUog.PLMwDzaUjFGWnGLtTNwrnUyamig",
+	"expressSalt": "NjM4NDEwOTIyNTI3ODE3NzQ4.XbcUog.PLMwDzaUjFGWnGLtTNwrnUyamig"
+}

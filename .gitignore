@@ -1,8 +1,9 @@
 package-lock.json
-private.json
-private/*
-private/votes.json
-private/quarantaine.json
+src/rivate.json
+src/private/*
+src/private/votes.json
+src/private/quarantaine.json
+build/**/*
 
 # Logs
 logs

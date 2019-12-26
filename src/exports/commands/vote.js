@@ -34,6 +34,10 @@ function createJsonForAnonVote(msg, target, type) {
 }
 
 module.exports = {
+  alias: [
+    'vote'
+  ],
+  activated: true,
   authorizations : {
     chans : {
       type: "any"

@@ -170,6 +170,13 @@ module.exports = {
     },
     Xp: function(msg, target, value, give) {
       maxilog.send(`${TiCu.Date("log")} : XP\n${tipoui.members.get(msg.author.id).displayName} ${give ? 'gave' : 'took'} ${value} XP ${give ? 'to' : 'from'} ${target}`)
+    },
+    Raid: function(msg, arg) {
+      maxilog.send(`${TiCu.Date("log")} : Raid\n<@${msg.author.id}> ${arg === 'on' ? 'activated' : 'desactivated'} the raid mode`)
+      msg.react("✅")
+    },
+    Avatar: function(msg, target) {
+      maxilog.send(`${TiCu.Date("log")} : Avatar\n${TiCu.Mention(msg.author.id).displayName} displayed ${target.displayName}'s avatar`)
     }
   },
   ReactionError: function(reaction, usr, type) {

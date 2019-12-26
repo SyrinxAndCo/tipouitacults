@@ -63,14 +63,14 @@ export = new class implements Command {
   }
   run = function(params: string[], msg: Message) {
     const memberParam = params[0] ? TiCu.Mention(params[0]) : null
-    const target = memberParam ? memberParam.id : msg.author.id
+    const target = memberParam instanceof GuildMember ? memberParam.id : msg.author.id
      TiCu.Xp.getMember(target).then(
        (entry: MemberXPType) => {
          if (entry) {
            if (entry.activated) {
              msg.channel.send(makeEmbed(tipoui.members.get(target)!!, msg, entry))
            } else {
-             msg.channel.send(`${memberParam ? 'Le compte de ' + memberParam.displayName : 'Votre compte'} est désactivé dans le système`)
+             msg.channel.send(`${memberParam instanceof GuildMember ? 'Le compte de ' + memberParam.displayName : 'Votre compte'} est désactivé dans le système`)
            }
          } else {
            msg.channel.send('Impossible de retrouver votre cible dans le système')

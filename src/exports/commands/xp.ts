@@ -1,5 +1,5 @@
 import {Command, Pub, Ticu} from "../../types"
-import {Guild, Message} from "discord.js"
+import {Guild, GuildMember, Message} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -37,7 +37,7 @@ export = new class implements Command{
         TiCu.Log.Commands.Xp(msg, 'all', params[2], params[0] === 'give')
       } else {
         const memberParam = params[1] ? TiCu.Mention(params[1]) : null
-        if (memberParam && tipoui.members.get(memberParam.id)) {
+        if (memberParam instanceof GuildMember && tipoui.members.get(memberParam.id)) {
           TiCu.Xp.updateXp(params[0] === 'give' ? 'add' : 'remove', Number(params[2]), memberParam.id)
           TiCu.Log.Commands.Xp(msg, memberParam.displayName, params[2], params[0] === 'give')
         } else {

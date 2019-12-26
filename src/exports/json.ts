@@ -1,5 +1,9 @@
+import {JsonTicu, Ticu} from "../types"
+
+declare const TiCu: Ticu
+
 const fs = require("fs")
-module.exports = function(data) {
+export = function(data: JsonTicu): any {
   let action = data.action ? data.action : ""
   let target = data.target ? data.target : ""
   let content = data.content ? data.content : ""

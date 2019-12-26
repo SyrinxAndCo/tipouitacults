@@ -1,5 +1,5 @@
 import {Command, Pub, Ticu} from "../../types"
-import {Message, RichEmbed} from "discord.js"
+import {GuildMember, Message, RichEmbed} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -29,7 +29,7 @@ export = new class implements Command {
   }
   run = function(params: string[], msg: Message) {
     const target = params[0] ? TiCu.Mention(params[0]) : TiCu.Mention(msg.author.id)
-    if (target.user) {
+    if (target instanceof GuildMember) {
       msg.channel.send(
         new RichEmbed()
           .setColor(target.displayColor)

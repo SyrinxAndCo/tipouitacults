@@ -71,13 +71,17 @@ export = new class implements Command{
     if(anon){
       if(type === "kick" || type === "ban") {
         if(msg.channel.id === PUB.salons.salleDesVotes.id || msg.channel.id === PUB.salons.automoderation.id) {
-          if(params[2]) {target = TiCu.Mention(params[2])}
-          else { return TiCu.Log.Error("vote", "les votes de kick et de ban nécessitent une cible")}
+          if(params[2]) {
+            let mention = TiCu.Mention(params[2])
+            target = mention instanceof GuildMember ? mention : undefined
+          } else { return TiCu.Log.Error("vote", "les votes de kick et de ban nécessitent une cible")}
         } else {return TiCu.Log.Error("vote", "les votes de kick et de ban sont restreints aux salons <#" + PUB.salons.automoderation.id + "> et <#" + PUB.salons.salleDesVotes.id +">", msg)}
       } else if(type === "turquoise") {
         if(msg.channel.id === PUB.salons.salleDesVotes.id) {
-          if(params[2]) {target = TiCu.Mention(params[2])}
-          else { return TiCu.Log.Error("vote", "les votes de passage Turquoise nécessitent une cible")}
+          if(params[2]) {
+            let mention = TiCu.Mention(params[2])
+            target = mention instanceof GuildMember ? mention : undefined
+          }else { return TiCu.Log.Error("vote", "les votes de passage Turquoise nécessitent une cible")}
         } else {return TiCu.Log.Error("vote", "les votes de passage Turquoise sont restreints au salon <#" + PUB.salons.salleDesVotes.id + ">", msg)}
       } else if(type !== "text") {return TiCu.Log.Error("vote", "quel type de vote ?", msg)}
       if(target instanceof GuildMember && type !== "text") {return TiCu.Log.Error("vote", "cible invalide")}

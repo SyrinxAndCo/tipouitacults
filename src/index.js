@@ -26,10 +26,10 @@ global.TiCu = {
   Channels : require("./exports/channels.js"),
   Commands : {},
   Reactions : {
-    // heart : require("./exports/reactions/heart.js")
+    heart : require("./exports/reactions/heart.js")
   },
   Auto : {
-    // suchTruc : require("./exports/auto/suchTruc.js")
+    suchTruc : require("./exports/auto/suchTruc.js")
   }
 }
 
@@ -53,7 +53,7 @@ Discord.once("ready", () => {
     console.log(TiCu.Date("log") + " : Connexion à Discord.")
     //maxilog.send(TiCu.Date("log") + " : Reconnexion.")
     //minilog.send("Coucou, je suis de retour ♥")
-    //TiCu.VotesCollections.Startup()
+    TiCu.VotesCollections.Startup()
     Server.get(
       "/discord/invite/:key",
       function(req, res) {
@@ -114,7 +114,7 @@ function retrieveMessageForEdit(originMsg, channel) {
 
 Discord.on("message", (msg) => {
   if(msg.author.id !== PUB.users.tipouitaculte && msg.author.id !== PUB.users.licorne) {
-    /*TiCu.Xp.processXpFromMessage('add', msg)
+    TiCu.Xp.processXpFromMessage('add', msg)
     if(msg.channel.type === "dm" ) {
       let user = tipoui.members.get(msg.author.id) ? tipoui.members.get(msg.author.id) : undefined
       if(user) {
@@ -133,7 +133,7 @@ Discord.on("message", (msg) => {
         tipoui.channels.get(PUB.salons.quarantaineUser.id).send(msg.content)
           .then(newMsg => TiCu.Log.Quarantaine("envoyé", newMsg, msg))
       }
-    } else*/ if(msg.content.match(/^![a-zA-Z]/)) {
+    } else if(msg.content.match(/^![a-zA-Z]/)) {
       let params = []
       msg.content.substring(1).split(/\s+/).forEach(value => {
         params.push(value.toLowerCase())
@@ -146,7 +146,7 @@ Discord.on("message", (msg) => {
   }
 })
 
-/*Discord.on("messageDelete", (msg) => {
+Discord.on("messageDelete", (msg) => {
   if(msg.author.id !== PUB.users.tipouitaculte && msg.author.id !== PUB.users.licorne) {
     TiCu.Xp.processXpFromMessage('remove', msg)
   }
@@ -206,7 +206,7 @@ function parseReaction(reaction, usr, type) {
   }
 }
 
-/*Discord.on("messageReactionAdd", (reaction, usr) => {
+Discord.on("messageReactionAdd", (reaction, usr) => {
   parseReaction(reaction, usr, "add")
 })
 Discord.on("messageReactionRemove", (reaction, usr) => {
@@ -241,6 +241,6 @@ Discord.on("guildMemberUpdate", (oldUsr, newUsr) => {
     if(newUsr.roles.get(PUB.roles.naughty.id)) {newUsr.removeRole(PUB.roles.naughty.id)}
   }
 })
-*/
+
 // Server
 Server.listen(3000);

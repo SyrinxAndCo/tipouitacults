@@ -1,4 +1,4 @@
-import {GuildMember, Message, MessageReaction} from "discord.js"
+import {Channel, GuildMember, Message, MessageReaction, Role} from "discord.js"
 
 export type Authorization = {
     type: string
@@ -52,13 +52,19 @@ export type ReactionsCommand = {
     run : (reaction: MessageReaction, usr: GuildMember, type: string) => void
 }
 
+export type TicuAuthorization = {
+    Command : (cmd: string, msg: Message) => boolean
+    Reaction : (reactionFunction: ReactionsCommand, reaction: MessageReaction, usr: GuildMember) => boolean
+    Auto : (autoCommand: AutoCommand, msg: Message) => boolean
+}
+
 export type Ticu = {
-    Date : any
+    Date : (type: string) => string
     Log : any
-    json : any
+    json : (data: JsonTicu) => any
     Xp : any
-    Mention : any
-    Authorizations : any
+    Mention : (param: string) => Role|Channel|GuildMember|boolean|undefined
+    Authorizations : TicuAuthorization
     VotesCollections : any
     Categories : any
     Channels : any

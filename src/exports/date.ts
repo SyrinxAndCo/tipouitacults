@@ -11,13 +11,13 @@ dateFormat.i18n = {
     ]
 }
 
-module.exports = function(type) {
-    let res
+export = function(type: string): string {
+    let res: string
     let now = Date()
     switch(type) {
         case "raw":
             // Raw: 1572369144723
-            res = Date.now()
+            res = Date.now().toString()
             break
         case "time":
             // Time: 18:12:24
@@ -40,7 +40,7 @@ module.exports = function(type) {
             res = dateFormat(now, "yyyy-mm-dd-HH-MM-ss")
             break
         default:
-            return 0
+            return '0'
     }
     return res
 }

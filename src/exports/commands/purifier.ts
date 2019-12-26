@@ -1,5 +1,5 @@
 import {Command, Pub, Ticu} from "../../types"
-import {Message, Role} from "discord.js"
+import {GuildMember, Message, Role} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -29,8 +29,9 @@ export = new class implements Command{
     roleNames : "🔥Pourfendeureuse de cismecs"
   }
   run = function(params: string[], msg: Message) {
-    let target
-    if(TiCu.Mention(params[0])) {target = TiCu.Mention(params[0])} else return TiCu.Log.Error("purifier", "cible invalide", msg)
+    let target: GuildMember
+    let mention = TiCu.Mention(params[0])
+    if(mention instanceof GuildMember) {target = mention} else return TiCu.Log.Error("purifier", "cible invalide", msg)
     if(!target.roles.find((e: Role) => e.id === PUB.roles.pourfendeureuse.id)) {
       target.addRole(PUB.roles.pourfendeureuse.id)
       TiCu.Log.Commands.Purifier(target, msg)

@@ -1,5 +1,5 @@
 import {Command, Pub, Ticu} from "../../types"
-import {Client, Message} from "discord.js"
+import {Client, GuildMember, Message} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -30,12 +30,13 @@ export = new class implements Command{
   }
   run = function(params: string[], msg: Message) {
     let crop = new RegExp(/^(!send\s+[^\s]+\s+)/)
-    let target = TiCu.Mention(params[0]).id
+    let mention = TiCu.Mention(params[0])
+    let target = mention instanceof GuildMember ? mention.id : ''
     let cropedMessage = msg.content.match(crop)
-    let content = cropedMessage ? msg.content.substring(cropedMessage[0].length) : false
-    if(target) {
+    let content = cropedMessage ? msg.content.substring(cropedMessage[0].length) : ''
+    if(target !== '') {
       if(content) {
-        let type = Discord.channels.get(target) ? "channels" : Discord.users.get(target) ? "users" : false
+        let type = Discord.channels.get(target) ? "channels" : Discord.users.get(target) ? "users" : ''
         if(type){
           (Discord as any)[type].get(target).send(content)
             .then((sentMsg: Message) => TiCu.Log.Commands.Send(msg, sentMsg))

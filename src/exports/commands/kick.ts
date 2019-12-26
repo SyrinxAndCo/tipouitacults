@@ -32,7 +32,8 @@ export = new class implements Command{
   run = function(params: string[], msg: Message) {
     let crop = new RegExp(/^(!kick\s+[^\s]+\s+)/)
     let target: GuildMember, reasonTxt : string
-    if(TiCu.Mention(params[0])) {target = TiCu.Mention(params[0])} else return TiCu.Log.Error("kick", "cible invalide", msg)
+    let mention = TiCu.Mention(params[0])
+    if(mention instanceof GuildMember) {target = mention} else return TiCu.Log.Error("kick", "cible invalide", msg)
     let reason = !!params[1]
     if(reason) {
       let stringCrop = msg.content.match(crop)

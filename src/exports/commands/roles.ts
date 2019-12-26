@@ -1,5 +1,5 @@
 import {Command, Pub, Ticu} from "../../types"
-import {Message} from "discord.js"
+import {GuildMember, Message} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -60,10 +60,10 @@ export = new class implements Command {
         }
       }
     }
-    if(target) {
+    if(target instanceof GuildMember) {
       if(action) {
         if(roles && roles.length === params.length - 2) {
-          target[action](roles)
+          (target as any)[action](roles)
             .then(() => TiCu.Log.Commands.Roles(target, action, roles, msg))
             .catch(() => TiCu.Log.Error("roles", "erreur API", msg))
         } else TiCu.Log.Error("roles", "liste de rôles invalide", msg)

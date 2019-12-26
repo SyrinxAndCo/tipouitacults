@@ -36,7 +36,8 @@ export = new class implements Command {
     let crop = new RegExp(/^(!quarantaine\s+[^\s]+\s+[^\s]+\s+)/)
     let action = params[1]
     let target: GuildMember
-    if(TiCu.Mention(params[0])) {target = TiCu.Mention(params[0])} else return TiCu.Log.Error("quarantaine", "cible invalide", msg)
+    let mention = TiCu.Mention(params[0])
+    if(mention instanceof GuildMember) {target = mention} else return TiCu.Log.Error("quarantaine", "cible invalide", msg)
     let reason : boolean|string = !!params[2]
     if(reason) {
       let cropedMessage = msg.content.match(crop)

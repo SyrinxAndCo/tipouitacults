@@ -1,5 +1,5 @@
 import {Command, MemberXPType, Pub, Ticu} from "../../types"
-import {Message} from "discord.js"
+import {GuildMember, Message} from "discord.js"
 
 declare const PUB: Pub
 declare const TiCu: Ticu
@@ -33,11 +33,12 @@ exports = new class implements Command {
         if (params[0] === 'inclure' || params[0] === 'exclure') {
           TiCu.Xp.changeMemberStatus(msg.author.id, params[0] === 'inclure', msg)
         } else {
-          const target = params[0] ? TiCu.Mention(params[0]).id : null
+          const mention = TiCu.Mention(params[0])
+          const target = mention instanceof GuildMember ? mention.id : null
           TiCu.Xp.getMember(target).then(
             (entry: MemberXPType) => {
-              if (entry) {
-                msg.channel.send(`Le compte de ${TiCu.Mention(params[0]).displayName} est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
+              if (entry && mention instanceof GuildMember) {
+                msg.channel.send(`Le compte de ${mention.displayName} est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
               } else {
                 msg.channel.send('Impossible de retrouver votre cible dans le système')
                 TiCu.Log.Commands.XPStatus(target)
@@ -49,7 +50,7 @@ exports = new class implements Command {
       case 2:
         if (msg.channel.id === PUB.salons.botsecret.id) { // only able to change status for another one in interface-tipoui
           const memberParam = params[1] ? TiCu.Mention(params[1]) : null
-          const target = memberParam ? memberParam.id : msg.author.id
+          const target = memberParam instanceof GuildMember ? memberParam.id : msg.author.id
           TiCu.Xp.changeMemberStatus(target, params[0] === 'inclure', msg)
         } else {
           TiCu.Log.Error('xpstatus', "permissions manquantes : vous ne pouvez pas modifier le status d'un tiers", msg)

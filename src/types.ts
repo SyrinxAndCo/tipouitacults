@@ -96,3 +96,9 @@ export type MemberXPType = {
     level: number
     activated: boolean
 }
+
+export type JsonTicu = {
+    action :string
+    target?: string
+    content?: any
+}

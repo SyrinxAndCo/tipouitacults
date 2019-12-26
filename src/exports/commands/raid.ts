@@ -1,5 +1,16 @@
-module.exports = {
-  authorizations : {
+import {Command, Pub, Ticu} from "../../types"
+import {Message} from "discord.js"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+declare let activeInvite: boolean
+
+export = new class implements Command{
+  alias = [
+    'raid'
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.botsecret.id]
@@ -16,8 +27,8 @@ module.exports = {
     channels : "💠interface-tipoui",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params:string[], msg: Message) {
     switch(params[0]) {
       case "on":
         activeInvite = false

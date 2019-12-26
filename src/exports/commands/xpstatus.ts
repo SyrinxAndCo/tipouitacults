@@ -1,9 +1,15 @@
-module.exports = {
-  alias: [
+import {Command, MemberXPType, Pub, Ticu} from "../../types"
+import {Message} from "discord.js"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+
+exports = new class implements Command {
+  alias = [
     'xpstatus'
-  ],
-  activated: true,
-  authorizations : {
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.bots.id, PUB.salons.botsecret.id]
@@ -20,8 +26,8 @@ module.exports = {
     channels : "🦄la-maison-de-la-bot, #💠interface-tipoui",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params: string[], msg: Message) {
     switch (params.length) {
       case 1:
         if (params[0] === 'inclure' || params[0] === 'exclure') {
@@ -29,7 +35,7 @@ module.exports = {
         } else {
           const target = params[0] ? TiCu.Mention(params[0]).id : null
           TiCu.Xp.getMember(target).then(
-            entry => {
+            (entry: MemberXPType) => {
               if (entry) {
                 msg.channel.send(`Le compte de ${TiCu.Mention(params[0]).displayName} est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
               } else {
@@ -51,7 +57,7 @@ module.exports = {
         break;
       default:
         TiCu.Xp.getMember(msg.author.id).then(
-          entry => {
+          (entry: MemberXPType) => {
             if (entry) {
               msg.channel.send( `Votre compte est ${entry.activated ? 'activé' : 'désactivé'} dans le système`)
             } else {

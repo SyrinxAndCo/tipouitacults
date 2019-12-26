@@ -1,9 +1,16 @@
-module.exports = {
-  alias: [
+import {Command, Pub, Ticu} from "../../types"
+import {Guild, Message} from "discord.js"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+declare const tipoui: Guild
+
+export = new class implements Command{
+  alias = [
     'xp'
-  ],
-  activated: true,
-  authorizations : {
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.botsecret.id]
@@ -20,9 +27,9 @@ module.exports = {
     channels : "💠interface-tipoui",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
-    if (params.length < 3 || (params[0] !== "give" && params[0] !== "take") || isNaN(params[2])) {
+  }
+  run = function(params: string[], msg: Message) {
+    if (params.length < 3 || (params[0] !== "give" && params[0] !== "take") || isNaN(params[2] as unknown as number)) {
       TiCu.Log.Error('xp', 'Mauvais paramètres dans l\'appel, consulter l\'aide (!help xp)', msg)
     } else {
       if (params[1] === 'all') {

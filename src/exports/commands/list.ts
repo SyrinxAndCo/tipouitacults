@@ -1,9 +1,15 @@
-module.exports = {
-  alias: [
+import {Command, Pub, Ticu} from "../../types"
+import {GuildChannel, Message, Role} from "discord.js"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+
+export = new class implements Command{
+  alias = [
     'list'
-  ],
-  activated: true,
-  authorizations : {
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id]
@@ -20,13 +26,13 @@ module.exports = {
     channels : "Bots Vigilant·es",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
+  }
+  run = function(params: string[], msg: Message) {
     if (params[0] == "roles" || params[0] == "channels") {
         let array = msg.guild[params[0]].array()
-        array.sort(function(a,b) {return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)})
+        array.sort(function(a: Role|GuildChannel,b: Role|GuildChannel) {return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)})
         let answer = ""
-        array.forEach(element => {
+        array.forEach((element: Role|GuildChannel) => {
             answer += (element.name == "@everyone") ? "" : element.name +" : "+ element.id +"\n"
         })
         if (answer.length > 2000) {

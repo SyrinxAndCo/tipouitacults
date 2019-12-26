@@ -1,9 +1,15 @@
-module.exports = {
-  alias: [
+import {Command, Pub, Ticu} from "../../types"
+import {Message} from "discord.js"
+
+declare const PUB: Pub
+declare const TiCu: Ticu
+
+export = new class implements Command {
+  alias = [
     'roles'
-  ],
-  activated: true,
-  authorizations : {
+  ]
+  activated = true
+  authorizations = {
     chans : {
       type: "whitelist",
       list: [PUB.salons.debug.id, PUB.salons.botsecret.id]
@@ -20,10 +26,10 @@ module.exports = {
     channels : "Bots Vigilant·es",
     authors : "Toustes",
     roleNames : "Tous"
-  },
-  run : function(params, msg) {
-    let action
-    let roles = []
+  }
+  run = function(params: string[], msg: Message) {
+    let action: string|boolean
+    let roles: string[] = []
     let target = TiCu.Mention(params[0])
     switch(params[1]) {
       case "ajouter":
